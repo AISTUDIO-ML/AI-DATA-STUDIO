@@ -60,3 +60,52 @@ The deployment ZIP is ready and available here:
 It includes:
 • Azure setup scripts (ACR, Key Vault, Container App with TEE)
 • GitHub Actions CI/CD pipeline
+
+
+🚀 Step-by-Step Deployment Plan on Azure TEE
+1. Prepare the Docker Image
+You already have a Dockerfile. Build and push it to Azure Container Registry (ACR):
+az acr create --name honeypotzregistry --resource-group <your-resource-group> --sku Basic
+az acr login --name honeypotzregistry
+docker build -t honeypotzregistry.azurecr.io/ai-data-studio:latest .
+docker push honeypotzregistry.azurecr.io/ai-data-studio:latest
+
+⸻
+2. Set Up Azure Confidential Containers (TEE)
+Azure supports TEE via Confidential Containers using Confidential VMs and Kata Containers.
+✅ Prerequisites:
+• Azure CLI
+• Confidential Compute-capable region (e.g., East US, West Europe)
+• Subscription with Confidential VM quota
+📦 Deploy with Confidential Container Group:
+az containerapp env create \
+  --name ai-data-studio-env \
+  --resource-group <your-resource-group> \
+  --location eastus \
+  --enable-confidential-compute true
+
+az containerapp create \
+  --name ai-data-studio \
+  --resource-group <your-resource-group> \
+  --environment ai-data-studio-env \
+  --image honeypotzregistry.azurecr.io/ai-data-studio:latest \
+  --target-port 8000 \
+  --ingress external \
+  --registry-server honeypotzregistry.azurecr.io \
+  --cpu 2 --memory 4Gi \
+  --confidential-compute-cce-policy ConfidentialCompute
+
+⸻
+3. Secure the Environment
+• Use Managed Identity for secure access to resources.
+• Enable Azure Key Vault for secrets.
+• Configure TLS/SSL for secure API access.
+⸻
+4. Monitor and Scale
+• Use Azure Monitor and Log Analytics.
+• Set up autoscaling rules based on CPU/memory usage.
+⸻
+✅ Optional Enhancements
+• Add Azure Event Hubs for Kafka-like streaming.
+• Integrate with Azure Machine Learning for model management.
+• Use Azure DevOps or GitHub Actions for CI/CD.
