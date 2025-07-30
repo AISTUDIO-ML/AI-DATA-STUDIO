@@ -53,3 +53,10 @@ az containerapp update \
   --scale-rule-name http-rule \
   --scale-rule-type http \
   --scale-rule-http-concurrency 50
+
+
+The deployment ZIP is ready and available here:
+📦 Download AI DATA STUDIO Deployment Package
+It includes:
+• Azure setup scripts (ACR, Key Vault, Container App with TEE)
+• GitHub Actions CI/CD pipeline
