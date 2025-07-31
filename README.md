@@ -109,3 +109,77 @@ az containerapp create \
 • Add Azure Event Hubs for Kafka-like streaming.
 • Integrate with Azure Machine Learning for model management.
 • Use Azure DevOps or GitHub Actions for CI/CD.
+
+
+
+• Virtual machines or containers inside Trusted Execution Environments (TEEs)
+• Secure networking (private subnets, NSGs/security groups)
+• Key management (Azure Key Vault / AWS KMS)
+• Logging and monitoring (Azure Monitor / CloudWatch)
+• Optional: AI model hosting (e.g., Azure ML / SageMaker)
+⸻
+🧰 What I’ll Include in the Terraform Setup
+1. Azure Deployment
+    • Confidential VM or SGX enclave
+    • Azure Key Vault
+    • Azure Monitor
+    • Private networking
+2. AWS Deployment
+    • Nitro Enclaves or EC2 with enclave support
+    • AWS KMS
+    • CloudWatch
+    • VPC with private subnets
+
+☁️ Azure Deployment
+• Uses Confidential VMs (Standard_DC2s_v2)
+• Includes Azure Key Vault for secrets
+• Configures Azure Monitor for logging and metrics
+• Sets up private networking
+📄 Download azure.tf
+⸻
+☁️ AWS Deployment
+• Uses Nitro Enclaves on m6i.large EC2 instances
+• Includes AWS KMS for key management
+• Configures CloudWatch for logs and alarms
+• Sets up VPC with private subnet and security group
+📄 Download aws.tf
+
+☁️ Azure DevOps Pipeline
+• Deploys infrastructure using Terraform
+• Authenticates with Azure using a service principal
+• Deploys your AI model to Azure Machine Learning
+📄 Download azure-pipeline.yml
+⸻
+☁️ GitHub Actions for AWS
+• Deploys infrastructure using Terraform
+• Uses boto3 to deploy your model to AWS SageMaker
+📄 Download aws-pipeline.yml
+
+☁️ Azure Workflow
+• Deploys infrastructure using Terraform
+• Deploys AI model to Azure Machine Learning
+• Uses secrets for secure authentication
+📄 Download azure.yml
+⸻
+☁️ AWS Workflow
+• Deploys infrastructure using Terraform
+• Deploys AI model to AWS SageMaker
+• Uses GitHub Secrets for AWS credentials
+📄 Download aws.yml
+⸻
+🔧 To Set Up in GitHub:
+1. Place these files in your repo under .github/workflows/.
+2. Add the following GitHub Secrets:
+    • For Azure:
+        • AZURE_CLIENT_ID
+        • AZURE_CLIENT_SECRET
+        • AZURE_SUBSCRIPTION_ID
+        • AZURE_TENANT_ID
+    • For AWS:
+        • AWS_ACCESS_KEY_ID
+        • AWS_SECRET_ACCESS_KEY
+        • AWS_DEFAULT_REGION
+3. Add your model deployment scripts:
+    • azure/deploy_model_azureml.py
+    • aws/deploy_model_sagemaker.py
+
