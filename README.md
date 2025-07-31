@@ -1,231 +1,144 @@
-# AI-DATA-STUDIO
+## 🚀 Installation
 
-📘 AI DATA STUDIO Deployment Guide (Azure + GitHub Actions)
-🔐 GitHub Secrets Setup
-To enable CI/CD deployment via GitHub Actions, add the following secrets to your GitHub repository:
-1. AZURE_CREDENTIALS
-    • Create a service principal:
-    • az ad sp create-for-rbac --name "github-actions-deployer" --role contributor \
-  --scopes /subscriptions/<SUBSCRIPTION_ID> --sdk-auth
+### 📋 Prerequisites
+- Python 3.8+
+- Terraform CLI
+- Azure CLI (`az`)
+- AWS CLI (`aws`)
+- GitHub account with repository access
+- Azure and AWS credentials with appropriate permissions
 
-    • Copy the JSON output and add it as a secret named AZURE_CREDENTIALS.
-2. ACR_USERNAME and ACR_PASSWORD
-    • Get credentials:
-    • az acr credential show --name honeypotzregistry
+---
 
-    • Add the username and passwords[0].value as secrets.
-⸻
-🚀 Running Azure CLI Scripts
-1. Login to Azure
-1. az login
+### ☁️ Azure Setup
 
-2. Run setup scripts
-2. chmod +x scripts/*.sh
-./scripts/setup_acr.sh
-./scripts/setup_keyvault.sh
-./scripts/deploy_container_app.sh
+1. **Create Azure Service Principal**  
+   Use the provided script: [`create_azure_sp.sh`](create_azure_sp.sh)
 
-⸻
-📊 Enable Monitoring, Logging, and Autoscaling
-1. Enable Log Analytics
-1. az monitor log-analytics workspace create \
-  --resource-group honeypotz-rg \
-  --workspace-name ai-data-studio-logs
+2. **Add GitHub Secrets**  
+   - `AZURE_CLIENT_ID`  
+   - `AZURE_CLIENT_SECRET`  
+   - `AZURE_TENANT_ID`  
+   - `AZURE_SUBSCRIPTION_ID`
 
-2. Attach to Container App
-2. az containerapp update \
-  --name ai-data-studio \
-  --resource-group honeypotz-rg \
-  --logs-workspace-id <workspace-id> \
-  --logs-workspace-key <workspace-key>
+3. **Deploy Infrastructure**  
+   Terraform file: [`azure.tf`](azure/azure.tf)
 
-3. Enable Autoscaling
-3. az containerapp revision set-mode \
-  --name ai-data-studio \
-  --resource-group honeypotz-rg \
-  --mode multiple
+4. **Deploy Model**  
+   Python script: [`deploy_model_azureml.py`](azure/deploy_model_azureml.py)
 
-az containerapp update \
-  --name ai-data-studio \
-  --resource-group honeypotz-rg \
-  --min-replicas 1 \
-  --max-replicas 5 \
-  --scale-rule-name http-rule \
-  --scale-rule-type http \
-  --scale-rule-http-concurrency 50
+5. **GitHub Actions Workflow**  
+   Workflow file: [`.github/workflows/azure.yml`](.github/workflows/azure.yml)
 
+---
 
-The deployment ZIP is ready and available here:
-📦 Download AI DATA STUDIO Deployment Package
-It includes:
-• Azure setup scripts (ACR, Key Vault, Container App with TEE)
-• GitHub Actions CI/CD pipeline
+### ☁️ AWS Setup
 
+1. **Create AWS IAM User**  
+   Use the provided script: [`create_aws_iam_user.sh`](create_aws_iam_user.sh)
 
-🚀 Step-by-Step Deployment Plan on Azure TEE
-1. Prepare the Docker Image
-You already have a Dockerfile. Build and push it to Azure Container Registry (ACR):
-az acr create --name honeypotzregistry --resource-group <your-resource-group> --sku Basic
-az acr login --name honeypotzregistry
-docker build -t honeypotzregistry.azurecr.io/ai-data-studio:latest .
-docker push honeypotzregistry.azurecr.io/ai-data-studio:latest
+2. **Add GitHub Secrets**  
+   - `AWS_ACCESS_KEY_ID`  
+   - `AWS_SECRET_ACCESS_KEY`  
+   - `AWS_DEFAULT_REGION`
 
-⸻
-2. Set Up Azure Confidential Containers (TEE)
-Azure supports TEE via Confidential Containers using Confidential VMs and Kata Containers.
-✅ Prerequisites:
-• Azure CLI
-• Confidential Compute-capable region (e.g., East US, West Europe)
-• Subscription with Confidential VM quota
-📦 Deploy with Confidential Container Group:
-az containerapp env create \
-  --name ai-data-studio-env \
-  --resource-group <your-resource-group> \
-  --location eastus \
-  --enable-confidential-compute true
+3. **Deploy Infrastructure**  
+   Terraform file: [`aws.tf`](aws/aws.tf)
 
-az containerapp create \
-  --name ai-data-studio \
-  --resource-group <your-resource-group> \
-  --environment ai-data-studio-env \
-  --image honeypotzregistry.azurecr.io/ai-data-studio:latest \
-  --target-port 8000 \
-  --ingress external \
-  --registry-server honeypotzregistry.azurecr.io \
-  --cpu 2 --memory 4Gi \
-  --confidential-compute-cce-policy ConfidentialCompute
+4. **Deploy Model**  
+   Python script: [`deploy_model_sagemaker.py`](aws/deploy_model_sagemaker.py)
 
-⸻
-3. Secure the Environment
-• Use Managed Identity for secure access to resources.
-• Enable Azure Key Vault for secrets.
-• Configure TLS/SSL for secure API access.
-⸻
-4. Monitor and Scale
-• Use Azure Monitor and Log Analytics.
-• Set up autoscaling rules based on CPU/memory usage.
-⸻
-✅ Optional Enhancements
-• Add Azure Event Hubs for Kafka-like streaming.
-• Integrate with Azure Machine Learning for model management.
-• Use Azure DevOps or GitHub Actions for CI/CD.
+5. **GitHub Actions Workflow**  
+   Workflow file: [`.github/workflows/aws.yml`](.github/workflows/aws.yml)
 
+---
 
+For custom deployment options, contact [team@honeypotz.net](mailto:team@honeypotz.net).
 
-• Virtual machines or containers inside Trusted Execution Environments (TEEs)
-• Secure networking (private subnets, NSGs/security groups)
-• Key management (Azure Key Vault / AWS KMS)
-• Logging and monitoring (Azure Monitor / CloudWatch)
-• Optional: AI model hosting (e.g., Azure ML / SageMaker)
-⸻
-🧰 What I’ll Include in the Terraform Setup
-1. Azure Deployment
-    • Confidential VM or SGX enclave
-    • Azure Key Vault
-    • Azure Monitor
-    • Private networking
-2. AWS Deployment
-    • Nitro Enclaves or EC2 with enclave support
-    • AWS KMS
-    • CloudWatch
-    • VPC with private subnets
+## 🏗️ Architecture Overview
 
-☁️ Azure Deployment
-• Uses Confidential VMs (Standard_DC2s_v2)
-• Includes Azure Key Vault for secrets
-• Configures Azure Monitor for logging and metrics
-• Sets up private networking
-📄 Download azure.tf
-⸻
-☁️ AWS Deployment
-• Uses Nitro Enclaves on m6i.large EC2 instances
-• Includes AWS KMS for key management
-• Configures CloudWatch for logs and alarms
-• Sets up VPC with private subnet and security group
-📄 Download aws.tf
+AI DATA STUDIO is designed with a modular and secure multi-cloud architecture that supports deployment on both Azure and AWS. Below is a high-level overview of its core components:
 
-☁️ Azure DevOps Pipeline
-• Deploys infrastructure using Terraform
-• Authenticates with Azure using a service principal
-• Deploys your AI model to Azure Machine Learning
-📄 Download azure-pipeline.yml
-⸻
-☁️ GitHub Actions for AWS
-• Deploys infrastructure using Terraform
-• Uses boto3 to deploy your model to AWS SageMaker
-📄 Download aws-pipeline.yml
+### 🔧 Infrastructure as Code (Terraform)
+- Uses Terraform to provision cloud infrastructure on Azure and AWS.
+- Ensures reproducibility, version control, and environment consistency.
 
-☁️ Azure Workflow
-• Deploys infrastructure using Terraform
-• Deploys AI model to Azure Machine Learning
-• Uses secrets for secure authentication
-📄 Download azure.yml
-⸻
-☁️ AWS Workflow
-• Deploys infrastructure using Terraform
-• Deploys AI model to AWS SageMaker
-• Uses GitHub Secrets for AWS credentials
-📄 Download aws.yml
-⸻
-🔧 To Set Up in GitHub:
-1. Place these files in your repo under .github/workflows/.
-2. Add the following GitHub Secrets:
-    • For Azure:
-        • AZURE_CLIENT_ID
-        • AZURE_CLIENT_SECRET
-        • AZURE_SUBSCRIPTION_ID
-        • AZURE_TENANT_ID
-    • For AWS:
-        • AWS_ACCESS_KEY_ID
-        • AWS_SECRET_ACCESS_KEY
-        • AWS_DEFAULT_REGION
-3. Add your model deployment scripts:
-    • azure/deploy_model_azureml.py
-    • aws/deploy_model_sagemaker.py
+### ☁️ Azure Deployment Pipeline
+- GitHub Actions workflow (`azure.yml`) automates:
+  - Terraform deployment of Confidential VMs and networking
+  - AI model deployment to Azure Machine Learning
+  - Monitoring setup via Azure Monitor and Log Analytics
 
+### ☁️ AWS Deployment Pipeline
+- GitHub Actions workflow (`aws.yml`) automates:
+  - Terraform deployment of Nitro Enclaves and secure VPC
+  - AI model deployment to AWS SageMaker
+  - Monitoring setup via CloudWatch and IAM roles
 
-🛠️ How to Use the Script
-1. Make it executable
-chmod +x create_azure_sp.sh
+### 🧠 AI Model Endpoints
+- Models are deployed as secure endpoints:
+  - Azure: Managed Online Endpoints via Azure ML
+  - AWS: Real-time endpoints via SageMaker
 
-2. Run the script
-./create_azure_sp.sh <your-subscription-id> [optional-resource-group-name]
+### 📊 Monitoring & Observability
+- Azure: Azure Monitor, Log Analytics, and Application Insights
+- AWS: CloudWatch metrics, logs, and alarms
+- GitHub Actions logs for CI/CD visibility
 
-• If you provide a resource group, the service principal will be scoped to it.
-• If not, it will be scoped to the entire subscription.
-⸻
-🔐 Output
-The script will print the values you need to add as GitHub Secrets:
-• AZURE_CLIENT_ID
-• AZURE_CLIENT_SECRET
-• AZURE_TENANT_ID
-• AZURE_SUBSCRIPTION_ID
+This architecture ensures scalability, security, and observability across both cloud platforms.
 
+## 🤝 Contributing
 
-🛠️ How to Use the Script
-1. Make it executable
-chmod +x create_aws_iam_user.sh
+We welcome contributions to AI DATA STUDIO! Here's how you can help:
 
-2. Run the script
-./create_aws_iam_user.sh AIDataStudioUser
+### 🐛 Reporting Issues
+- Use the [Issues](https://github.com/your-repo/issues) tab to report bugs or request features.
+- Please include detailed steps to reproduce the issue and any relevant logs or screenshots.
 
-This will:
-• Create an IAM user
-• Generate access keys
-• Attach the AdministratorAccess policy
-• Output the credentials for GitHub Secrets
-⸻
+### 🔧 Submitting Pull Requests
+- Fork the repository and create a new branch for your feature or fix.
+- Follow the existing code style and include tests where applicable.
+- Submit a pull request with a clear description of your changes.
 
-☁️ Azure Machine Learning Deployment
-📄 Download deploy_model_azureml.py
-• Deploys a registered model to Azure ML using a Managed Online Endpoint
-• Requires azure-identity and azure-ai-ml packages
-⸻
-☁️ AWS SageMaker Deployment
-📄 Download deploy_model_sagemaker.py
-• Deploys a model to SageMaker using a container and S3 artifact
-• Requires boto3 and valid IAM role permissions
+### 📚 Improving Documentation
+- Help us improve the README or other documentation files.
+- Fix typos, clarify instructions, or add new sections.
 
-📬 Custom Deployment
-Custom deployment options are available upon request. Please contact us at team@honeypotz.net.
+### 🌟 Feature Contributions
+- Propose new features by opening an issue first to discuss your idea.
+- Once approved, you can start working on the implementation.
 
+Thank you for helping us make AI DATA STUDIO better!
+## 🚀 Roadmap
+
+The following features and improvements are planned for future releases of AI DATA STUDIO:
+
+- 🔧 Enhanced Model Management
+  - Support for multi-model orchestration
+  - Automatic model versioning and rollback
+
+- 📊 Advanced Visualization
+  - Real-time interactive dashboards
+  - Customizable analytics widgets
+
+- 🔐 Security Upgrades
+  - Integration with third-party identity providers
+  - Fine-grained access control policies
+
+- ☁️ Multi-Cloud Support
+  - Unified deployment across Azure, AWS, and GCP
+  - Cross-cloud monitoring and failover
+
+- 🧠 AI Enhancements
+  - Built-in explainability tools (SHAP, LIME)
+  - AutoML integration for model selection
+
+- 🛠️ Developer Experience
+  - CLI tools for deployment and monitoring
+  - SDKs for Python and JavaScript
+
+- 📦 Packaging & Distribution
+  - Docker images and Helm charts
+  - Marketplace publishing options
+
+Have a feature request? Reach out to [team@honeypotz.net](mailto:team@honeypotz.net).
