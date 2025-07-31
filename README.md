@@ -225,3 +225,7 @@ This will:
 📄 Download deploy_model_sagemaker.py
 • Deploys a model to SageMaker using a container and S3 artifact
 • Requires boto3 and valid IAM role permissions
+
+📬 Custom Deployment
+Custom deployment options are available upon request. Please contact us at team@honeypotz.net.
+
