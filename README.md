@@ -183,3 +183,35 @@ az containerapp create \
     • azure/deploy_model_azureml.py
     • aws/deploy_model_sagemaker.py
 
+
+🛠️ How to Use the Script
+1. Make it executable
+chmod +x create_azure_sp.sh
+
+2. Run the script
+./create_azure_sp.sh <your-subscription-id> [optional-resource-group-name]
+
+• If you provide a resource group, the service principal will be scoped to it.
+• If not, it will be scoped to the entire subscription.
+⸻
+🔐 Output
+The script will print the values you need to add as GitHub Secrets:
+• AZURE_CLIENT_ID
+• AZURE_CLIENT_SECRET
+• AZURE_TENANT_ID
+• AZURE_SUBSCRIPTION_ID
+
+
+🛠️ How to Use the Script
+1. Make it executable
+chmod +x create_aws_iam_user.sh
+
+2. Run the script
+./create_aws_iam_user.sh AIDataStudioUser
+
+This will:
+• Create an IAM user
+• Generate access keys
+• Attach the AdministratorAccess policy
+• Output the credentials for GitHub Secrets
+⸻
