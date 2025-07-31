@@ -1,0 +1,35 @@
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  terraformVersion: '1.4.6'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+- script: |
+    curl -O https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip
+    unzip terraform_${terraformVersion}_linux_amd64.zip
+    sudo mv terraform /usr/local/bin/
+  displayName: 'Install Terraform'
+
+- script: |
+    terraform init
+    terraform plan -out=tfplan
+    terraform apply -auto-approve tfplan
+  workingDirectory: azure
+  displayName: 'Deploy Azure Infrastructure'
+
+- script: |
+    az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
+    az ml model deploy --name ai-data-studio-model --model-path ./model --workspace-name $(workspaceName) --resource-group $(resourceGroup)
+  displayName: 'Deploy AI Model to Azure ML'
