@@ -215,3 +215,13 @@ This will:
 • Attach the AdministratorAccess policy
 • Output the credentials for GitHub Secrets
 ⸻
+
+☁️ Azure Machine Learning Deployment
+📄 Download deploy_model_azureml.py
+• Deploys a registered model to Azure ML using a Managed Online Endpoint
+• Requires azure-identity and azure-ai-ml packages
+⸻
+☁️ AWS SageMaker Deployment
+📄 Download deploy_model_sagemaker.py
+• Deploys a model to SageMaker using a container and S3 artifact
+• Requires boto3 and valid IAM role permissions
